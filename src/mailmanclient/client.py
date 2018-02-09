@@ -31,7 +31,7 @@ from mailmanclient.restobjects.member import Member
 from mailmanclient.restobjects.preferences import Preferences
 from mailmanclient.restobjects.queue import Queue
 from mailmanclient.restobjects.user import User
-from mailmanclient.restbase.connection import Connection
+from mailmanclient.restbase.connection import Connection, get_data_str
 from mailmanclient.restbase.page import Page
 
 __metaclass__ = type
@@ -99,20 +99,28 @@ class Client:
     def lists(self):
         return self.get_lists()
 
-    def get_lists(self, advertised=None):
+    def get_lists(self, advertised=None, owner=None):
         url = 'lists'
+        data ={}
         if advertised:
-            url += '?advertised=true'
-        response, content = self._connection.call(url)
+            data['advertised'] = 'true'
+        if owner:
+            data['owner'] = owner
+        response, content = self._connection.call(url, data)
         if 'entries' not in content:
             return []
         return [MailingList(self._connection, entry['self_link'], entry)
                 for entry in content['entries']]
 
-    def get_list_page(self, count=50, page=1, advertised=None):
+    def get_list_page(self, count=50, page=1, advertised=None, owner=None):
         url = 'lists'
+        data = {}
         if advertised:
-            url += '?advertised=true'
+            data['advertised'] = 'true'
+        if owner:
+            data['owner'] = owner
+        if data:
+            url += '?' + get_data_str(data)
         return Page(self._connection, url, MailingList, count, page)
 
     @property

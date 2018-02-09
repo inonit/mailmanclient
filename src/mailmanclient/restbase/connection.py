@@ -29,6 +29,12 @@ __all__ = [
     'Connection'
 ]
 
+def get_data_str(data):
+    for k, v in data.items():
+        if not isinstance(v, bytes):
+            data[k] = six.text_type(v).encode('utf-8')
+    return urlencode(data, doseq=True)
+
 
 class MailmanConnectionError(Exception):
     """Custom Exception to catch connection errors."""
@@ -81,10 +87,7 @@ class Connection:
             }
         data_str = None
         if data is not None:
-            for k, v in data.items():
-                if not isinstance(v, bytes):
-                    data[k] = six.text_type(v).encode('utf-8')
-            data_str = urlencode(data, doseq=True)
+            data_str = get_data_str(data)
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
         if method is None:
             if data_str is None:
